@@ -26,6 +26,8 @@ POWER_POOL_SAMPLER = "power-pool"
 SETTINGS_SAMPLER = "settings-sampler"
 #: Studies that re-shape one Alpha's expression at its own settings (tools.correlation_breaker).
 CORRELATION_BREAKER = "correlation-breaker"
+#: Studies that simulate SuperAlphas from selections written up front (labs.super_alpha).
+SUPER_SAMPLER = "super-alpha"
 #: Studies that are research-lab tasks, run only from the Tasks tab, by their lab's name.
 TASK_SAMPLERS = {
     SEARCH_SAMPLER: "Search Lab",
@@ -34,6 +36,7 @@ TASK_SAMPLERS = {
     POWER_POOL_SAMPLER: "LLM Power Pool Lab",
     SETTINGS_SAMPLER: "Settings Sampler",
     CORRELATION_BREAKER: "Correlation Breaker",
+    SUPER_SAMPLER: "Super Lab",
 }
 
 
@@ -154,6 +157,27 @@ class BreakerParams(TaskParams):
     recipes: list[str] = Field(default_factory=list)
 
 
+class SuperParams(TaskParams):
+    """Super Lab: one SuperAlpha per selection and combo, every simulation written up front."""
+
+    universe: str = ""
+    neutralization: str = ""
+    decay: int = 0
+    selection_limit: int = Field(
+        default=10,
+        validation_alias=AliasChoices("selectionLimit", "selection_limit"),
+        serialization_alias="selectionLimit",
+    )
+    selection_handling: str = Field(
+        default="POSITIVE",
+        validation_alias=AliasChoices("selectionHandling", "selection_handling"),
+        serialization_alias="selectionHandling",
+    )
+    #: How many selections and combos were crossed, for the task's detail line.
+    selections: int = 0
+    combos: int = 0
+
+
 BY_SAMPLER: dict[str, type[TaskParams]] = {
     SEARCH_SAMPLER: SearchParams,
     TEMPLATE_SAMPLER: TemplateParams,
@@ -161,6 +185,7 @@ BY_SAMPLER: dict[str, type[TaskParams]] = {
     POWER_POOL_SAMPLER: PowerPoolParams,
     SETTINGS_SAMPLER: SettingsParams,
     CORRELATION_BREAKER: BreakerParams,
+    SUPER_SAMPLER: SuperParams,
 }
 
 

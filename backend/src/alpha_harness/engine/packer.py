@@ -69,9 +69,12 @@ class BatchKey:
         """How many of these a multi-simulation may carry.
 
         Measured: BRAIN answers ``201`` to an array of region-agnostic simulations and then
-        fails the parent and cancels every child, so they go one at a time.
+        fails the parent and cancels every child, so they go one at a time. SuperAlphas go one
+        at a time as well: multi-simulation is documented for regular Alphas only.
         """
-        return 1 if self.region_agnostic else MAX_BATCH
+        if self.region_agnostic or self.sim_type == SimulationType.SUPER:
+            return 1
+        return MAX_BATCH
 
 
 @dataclass(frozen=True, slots=True)

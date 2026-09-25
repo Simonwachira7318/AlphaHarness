@@ -204,6 +204,12 @@ class BrainEndpoints:
             raise BrainServiceUnavailable(f"POST /simulations answered {r.status}", status=r.status)
         return r
 
+    async def super_selection(self, params: dict[str, Any]) -> dict[str, Any]:
+        """``GET /simulations/super-selection``: which of your Alphas a SuperAlpha selection
+        picks, answered without simulating anything, so it spends no quota."""
+        r = await self.client.request_retrying("GET", "/simulations/super-selection", params=params)
+        return r.body if isinstance(r.body, dict) else {}
+
     async def read_simulation(self, simulation_id: str) -> BrainResponse:
         """One raw status read, errors included: the tracker decides what each one means."""
         return await self.client.request(

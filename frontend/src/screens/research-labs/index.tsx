@@ -8,6 +8,7 @@ import {
   FlaskConicalIcon,
   type LucideIcon,
   SearchIcon,
+  SigmaIcon,
   ZapIcon,
 } from 'lucide-react'
 import { LAB_TABS } from '@/shell/nav'
@@ -20,6 +21,7 @@ const ICONS: Record<(typeof LAB_TABS)[number]['tab'], LucideIcon> = {
   template: BlocksIcon,
   evolution: DnaIcon,
   'power-pool': ZapIcon,
+  super: SigmaIcon,
 }
 
 const number = (index: number) => String(index + 1).padStart(2, '0')

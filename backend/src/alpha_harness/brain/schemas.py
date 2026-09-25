@@ -166,6 +166,9 @@ class SimulationSettings(BrainModel):
     #: ``FULL`` or ``QUICK``; BRAIN defaults it to ``FULL`` and this application never sends
     #: ``QUICK`` (see :data:`QUICK_MODE`). Read back off an Alpha, where it matters.
     simulation_mode: str | None = None
+    #: SuperAlphas only: how the selected Alphas are filtered and how many are kept.
+    selection_handling: str | None = None
+    selection_limit: int | None = None
 
     @property
     def batch_key(self) -> tuple[str, str, int, str]:

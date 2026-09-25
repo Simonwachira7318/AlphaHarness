@@ -17,7 +17,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field, RootModel
 from sqlalchemy import delete, func, select
 
-from ..brain.errors import BrainError
+from ..brain.errors import BrainError, BrainNotFound
 from ..db.models import BrainCache, SimulationRecord, Study, Trial, TrialState, utcnow
 from ..labs.fastexpr import ParseError, data_fields, operator_count, operator_names, parse
 from ..labs.params import TASK_SAMPLERS
@@ -345,6 +345,14 @@ async def _lineage(state: State, alpha_id: str) -> AlphaLineage | None:
     )
 
 
+def _missing(what: str) -> str:
+    """BRAIN still has the Alpha but not this recordset: said as a fact, not as a failure."""
+    return (
+        f"BRAIN has no {what} for this Alpha (it answers 404), as happens with older "
+        "unsubmitted Alphas. The figures above come from the Alpha itself and are unaffected."
+    )
+
+
 # -- routes --------------------------------------------------------------------
 
 
@@ -398,7 +406,11 @@ async def page(alpha_id: str, state: State, refresh: Refresh = False) -> AlphaVi
     except BrainError as exc:
         stale = await _stored(state, f"pnl:{alpha_id}")
         if stale is None:
-            problems.append(f"The PnL series could not be loaded: {exc.message}")
+            problems.append(
+                _missing("PnL series")
+                if isinstance(exc, BrainNotFound)
+                else f"The PnL series could not be loaded: {exc.message}"
+            )
         else:
             dates, pnl, constrained = _series(stale.body)
             problems.append(
@@ -417,7 +429,11 @@ async def page(alpha_id: str, state: State, refresh: Refresh = False) -> AlphaVi
     except BrainError as exc:
         stale = await _stored(state, f"yearly:{alpha_id}")
         if stale is None:
-            problems.append(f"The yearly stats could not be loaded: {exc.message}")
+            problems.append(
+                _missing("yearly stats")
+                if isinstance(exc, BrainNotFound)
+                else f"The yearly stats could not be loaded: {exc.message}"
+            )
         else:
             yearly = _yearly(stale.body)
             problems.append(

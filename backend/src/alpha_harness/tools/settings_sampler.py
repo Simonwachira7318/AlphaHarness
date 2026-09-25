@@ -25,6 +25,7 @@ from ..brain.schemas import (
     TEST_PERIOD,
     SimulationRequest,
     SimulationSettings,
+    SimulationType,
 )
 from ..brain.settings_schema import valid_values
 from ..db.models import MetadataCache, SimStatus, StudyStatus, Trial, TrialState, utcnow
@@ -557,18 +558,30 @@ async def refill(optimizer: Optimizer, row: Study, want: int, waiting: bool) -> 
     return sent
 
 
+def request_of(trial: Trial) -> SimulationRequest:
+    """The simulation a parked trial stands for.
+
+    A SuperAlpha trial keeps its combo in ``params`` and its selection as the expression.
+    """
+    settings = SimulationSettings.model_validate(trial.settings)
+    params = trial.params or {}
+    if params.get("type") == SimulationType.SUPER:
+        return SimulationRequest(
+            type=SimulationType.SUPER,
+            settings=settings,
+            selection=trial.expression,
+            combo=str(params.get("combo") or ""),
+        )
+    return SimulationRequest(settings=settings, regular=trial.expression)
+
+
 async def _send(optimizer: Optimizer, row: Study, batch: Sequence[Trial]) -> int:
     """Send one batch and record what came back.
 
     ``batch`` must still be attached to the caller's session: the outcome is written by
     assigning to those rows, which is what saves a round trip per trial.
     """
-    requests = [
-        SimulationRequest(
-            settings=SimulationSettings.model_validate(t.settings), regular=t.expression
-        )
-        for t in batch
-    ]
+    requests = [request_of(t) for t in batch]
     outcomes = (await optimizer.engine.enqueue(requests, task=row.task, skip_duplicates=True)).get(
         "outcomes", []
     )

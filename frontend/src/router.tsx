@@ -84,6 +84,11 @@ const powerPoolLab = createRoute({
     'PowerPoolLabScreen',
   ),
 })
+const superLab = createRoute({
+  getParentRoute: () => labs,
+  path: 'super',
+  component: lazyRouteComponent(() => import('@/screens/research-labs/super'), 'SuperLabScreen'),
+})
 const tools = createRoute({ getParentRoute: () => root, path: '/tools' })
 const toolsIndex = createRoute({
   getParentRoute: () => tools,
@@ -196,7 +201,7 @@ const routeTree = root.addChildren([
   dashboard,
   matrix,
   data.addChildren([dataIndex, dataTab]),
-  labs.addChildren([labsIndex, searchLab, templateLab, evolutionLab, powerPoolLab]),
+  labs.addChildren([labsIndex, searchLab, templateLab, evolutionLab, powerPoolLab, superLab]),
   tools.addChildren([toolsIndex, settingsSampler, submissionPlanner, correlationBreaker]),
   tasks.addChildren([tasksIndex, taskResults]),
   pool.addChildren([poolIndex, poolTab]),

@@ -23,6 +23,7 @@ from .params import (
     GA_SAMPLER,
     POWER_POOL_SAMPLER,
     SETTINGS_SAMPLER,
+    SUPER_SAMPLER,
     TASK_SAMPLERS,
     TEMPLATE_SAMPLER,
     SearchParams,
@@ -206,8 +207,8 @@ async def advance(optimizer: Optimizer, study_id: int) -> int:
         from . import power_pool  # imported here: labs.power_pool builds on this module
 
         return await power_pool.refill(optimizer, row, want, waiting)
-    # Both write every simulation up front, so both are drained the same way.
-    if row.sampler in (SETTINGS_SAMPLER, CORRELATION_BREAKER):
+    # These write every simulation up front, so all are drained the same way.
+    if row.sampler in (SETTINGS_SAMPLER, CORRELATION_BREAKER, SUPER_SAMPLER):
         from ..tools import settings_sampler  # same cycle: it builds on this module
 
         return await settings_sampler.refill(optimizer, row, want, waiting)
