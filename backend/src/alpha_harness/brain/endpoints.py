@@ -296,6 +296,31 @@ class BrainEndpoints:
             "offset": query.offset,
         }
 
+    async def submitted_alphas(self) -> list[dict[str, Any]]:
+        """Every submitted (``ACTIVE``) Alpha, newest first, whole bodies. Paged by 100."""
+        out: list[dict[str, Any]] = []
+        for offset in range(0, 100_000, 100):
+            r = await self.client.request_retrying(
+                "GET",
+                f"/users/self/alphas?limit=100&offset={offset}&status=ACTIVE&order=-dateSubmitted",
+                version=V_ALPHA_LIST,
+            )
+            page = (r.body or {}).get("results") if isinstance(r.body, dict) else None
+            out.extend(page or [])
+            if not page or len(page) < 100:
+                break
+        return out
+
+    # -- the account, for the Profile page ----------------------------------
+    #
+    # All read-only. Shapes are undocumented and were read off the live platform: the
+    # activities share ``{yesterday, current, previous, ytd, total, records}``.
+
+    async def account_resource(self, path: str) -> dict[str, Any]:
+        """``GET /users/self/<path>``: an activity, the consultant block, competitions…"""
+        r = await self.client.request_retrying("GET", f"/users/self/{path}")
+        return r.body if isinstance(r.body, dict) else {}
+
     async def alphas_summary(self) -> dict[str, Any]:
         """Aggregate counts: ``{unsubmitted, active, decommissioned}``."""
         r = await self.client.request("GET", "/users/self/alphas/summary", version=V_ALPHA_SUMMARY)

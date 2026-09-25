@@ -1,25 +1,29 @@
-/** Tools: every tool, two by two.
+/** Tools: every tool, three to a row.
  *
- * The same card grid as Research Labs, so the two group screens read as one pattern. No
- * "Coming Soon" slots here: the labs are a fixed roster of four and the empty ones say so,
- * while tools are added when something needs one.
+ * The same cards as Research Labs, so the two group screens read as one pattern, with the
+ * sidebar's wrench in the tile where the labs have the flask.
  */
 
 import { Link } from '@tanstack/react-router'
 import {
-  ArrowUpRightIcon,
+  DropletsIcon,
   ListChecksIcon,
   type LucideIcon,
+  SendIcon,
   SlidersHorizontalIcon,
   UnlinkIcon,
+  WrenchIcon,
 } from 'lucide-react'
 import { TOOL_TABS } from '@/shell/nav'
 import { Page, PageHeader } from '@/ui/kit'
+import { NAV_CARD, NavCardContent } from '@/ui/nav-card'
 
 const ICONS: Record<(typeof TOOL_TABS)[number]['tab'], LucideIcon> = {
   'settings-sampler': SlidersHorizontalIcon,
   'submission-planner': ListChecksIcon,
   'correlation-breaker': UnlinkIcon,
+  'submit-queue': SendIcon,
+  osmosis: DropletsIcon,
 }
 
 /** What each one is for, since a name alone does not say when to reach for it. */
@@ -27,6 +31,8 @@ const ABOUT: Record<(typeof TOOL_TABS)[number]['tab'], string> = {
   'settings-sampler': 'Sweep one Alpha across Simulation Settings to find where it works best.',
   'submission-planner': 'Pick which Alphas to submit, and in what order.',
   'correlation-breaker': 'Re-shape an Alpha that is already in the Production Pool.',
+  'submit-queue': 'Submits your approved Alphas for you, within a daily cap.',
+  osmosis: 'Allocates your Osmosis points each week, within BRAIN’s rules.',
 }
 
 /** Each tool's own search params. Both take one and default it to nothing, and a `Link`
@@ -35,43 +41,27 @@ const SEARCH = {
   'settings-sampler': { alpha: undefined },
   'submission-planner': { task: undefined },
   'correlation-breaker': { alpha: undefined },
+  'submit-queue': {},
+  osmosis: {},
 } as const
-
-const number = (index: number) => String(index + 1).padStart(2, '0')
 
 export function ToolsScreen() {
   return (
     <Page>
       <PageHeader title="Tools" />
-      <div className="grid gap-3 sm:grid-cols-2">
-        {TOOL_TABS.map((tool, index) => {
-          const Icon = ICONS[tool.tab]
-          return (
-            <Link
-              key={tool.tab}
-              to={tool.to}
-              search={SEARCH[tool.tab]}
-              className="panel-highlight group flex min-h-56 flex-col justify-between rounded-lg border border-hairline bg-surface-1 p-6 transition-colors hover:border-hairline-strong hover:bg-surface-2"
-            >
-              <div className="flex items-start justify-between">
-                <span className="flex size-12 items-center justify-center rounded-md border border-hairline-strong bg-surface-2 text-ink-muted transition-colors group-hover:border-primary group-hover:text-primary">
-                  <Icon className="size-6" aria-hidden />
-                </span>
-                <ArrowUpRightIcon
-                  className="size-5 text-ink-tertiary transition-colors group-hover:text-ink"
-                  aria-hidden
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="num text-body-compact text-ink-subtle">{number(index)}</span>
-                <h2 className="text-headline font-semibold text-balance text-ink">{tool.label}</h2>
-                <p className="max-w-prose text-body text-pretty text-ink-subtle">
-                  {ABOUT[tool.tab]}
-                </p>
-              </div>
-            </Link>
-          )
-        })}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {TOOL_TABS.map((tool, index) => (
+          <Link key={tool.tab} to={tool.to} search={SEARCH[tool.tab]} className={NAV_CARD}>
+            <NavCardContent
+              tile={WrenchIcon}
+              pivot="center"
+              mark={ICONS[tool.tab]}
+              index={index}
+              label={tool.label}
+              description={ABOUT[tool.tab]}
+            />
+          </Link>
+        ))}
       </div>
     </Page>
   )

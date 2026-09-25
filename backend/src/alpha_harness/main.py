@@ -36,11 +36,14 @@ from .api import (
     ga,
     lab_tasks,
     llm,
+    osmosis,
     portfolio,
     power_pool_lab,
+    profile,
     quarter,
     search_lab,
     sims,
+    submit_queue,
     super_lab,
     tasks,
     template_lab,
@@ -178,6 +181,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(lab_tasks.router)
     app.include_router(power_pool_lab.router)
     app.include_router(super_lab.router)
+    app.include_router(submit_queue.router)
+    app.include_router(profile.router)
+    app.include_router(osmosis.router)
     app.include_router(chat.router)
     app.include_router(update.router)
     app.include_router(ws.router)

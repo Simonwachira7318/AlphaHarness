@@ -1187,6 +1187,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/osmosis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** View */
+        get: operations["view_api_osmosis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/osmosis/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply
+         * @description Set every submitted Alpha's Osmosis points to the plan, now.
+         */
+        post: operations["apply_api_osmosis_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/osmosis/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Settings */
+        put: operations["save_settings_api_osmosis_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolio/compute": {
         parameters: {
             query?: never;
@@ -1296,6 +1350,23 @@ export interface paths {
         put?: never;
         /** Add Task */
         post: operations["add_task_api_power_pool_lab_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["profile_api_profile_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1510,6 +1581,134 @@ export interface paths {
          *     submission request is even sent.
          */
         post: operations["cancel_api_simulations__record_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** View */
+        get: operations["view_api_submit_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add
+         * @description Approve Alphas for the automatic path, queued at the back in the order given.
+         */
+        post: operations["add_api_submit_queue_add_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/caps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Caps
+         * @description How many of each kind the queue may submit on its own per day. Zero stops that kind.
+         */
+        put: operations["set_caps_api_submit_queue_caps_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause */
+        post: operations["pause_api_submit_queue_pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reorder */
+        post: operations["reorder_api_submit_queue_reorder_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/{alpha_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove */
+        delete: operations["remove_api_submit_queue__alpha_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submit-queue/{alpha_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Now
+         * @description Submit one Alpha now, past the daily caps. Irreversible.
+         */
+        post: operations["submit_now_api_submit_queue__alpha_id__submit_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2105,6 +2304,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Activity
+         * @description One of BRAIN's activity series: headline windows and the dated rows.
+         */
+        Activity: {
+            current: components["schemas"]["Window"] | null;
+            previous: components["schemas"]["Window"] | null;
+            /** Records */
+            records: [
+                string,
+                number
+            ][];
+            /** Title */
+            title: string;
+            total: components["schemas"]["Window"] | null;
+            yesterday: components["schemas"]["Window"] | null;
+            ytd: components["schemas"]["Window"] | null;
+        };
         /** AddKey */
         AddKey: {
             /**
@@ -2128,6 +2345,15 @@ export interface components {
              * @default google
              */
             provider: string;
+        };
+        /** Added */
+        Added: {
+            /** Added */
+            added: boolean;
+            /** Alphaid */
+            alphaId: string;
+            /** Message */
+            message: string;
         };
         /** AddedTask */
         AddedTask: {
@@ -2301,6 +2527,23 @@ export interface components {
             /** Universes */
             universes?: string[] | null;
         };
+        /** AlphaPoints */
+        AlphaPoints: {
+            /** Alphaid */
+            alphaId: string;
+            /** Current */
+            current: number | null;
+            /** Fitness */
+            fitness: number | null;
+            /** Planned */
+            planned: number | null;
+            /** Sharpe */
+            sharpe: number | null;
+            /** Turnover */
+            turnover: number | null;
+            /** Type */
+            type: string;
+        };
         /** AlphaProperties */
         AlphaProperties: {
             /** Category */
@@ -2460,6 +2703,25 @@ export interface components {
             turnover?: number | null;
             /** Year */
             year: string;
+        };
+        /** Applied */
+        Applied: {
+            /** Applied */
+            applied: number;
+            /** Eligible */
+            eligible: boolean;
+            /** Failed */
+            failed: string[];
+            /** Message */
+            message: string;
+        };
+        /** Approve */
+        Approve: {
+            /**
+             * Confirm
+             * @constant
+             */
+            confirm: true;
         };
         /** AssistRequest */
         AssistRequest: {
@@ -2674,6 +2936,13 @@ export interface components {
             /** Cancelled */
             cancelled: boolean;
         };
+        /** Caps */
+        Caps: {
+            /** Regular */
+            regular: number;
+            /** Super */
+            super: number;
+        };
         /** CatalogCounts */
         CatalogCounts: {
             /** Categories */
@@ -2853,6 +3122,25 @@ export interface components {
             /** Passed */
             passed: boolean;
         };
+        /** Competition */
+        Competition: {
+            /** Alphas */
+            alphas: number | null;
+            /** End */
+            end: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Rank */
+            rank: number | null;
+            /** Scoring */
+            scoring: string | null;
+            /** Start */
+            start: string | null;
+            /** Status */
+            status: string | null;
+        };
         /** ContextCounts */
         ContextCounts: {
             /** Categories */
@@ -3030,6 +3318,21 @@ export interface components {
             /** Tags */
             tags: string[];
         };
+        /** DiversityRow */
+        DiversityRow: {
+            /** Alphas */
+            alphas: number;
+            /** Category */
+            category: string | null;
+            /** Check */
+            check: string | null;
+            /** Delay */
+            delay: number | null;
+            /** Limit */
+            limit: number | null;
+            /** Region */
+            region: string | null;
+        };
         /** DropResult */
         DropResult: {
             /** Dropped */
@@ -3051,7 +3354,7 @@ export interface components {
             inFlight: {
                 [key: string]: number;
             };
-            lastPause: components["schemas"]["Pause"] | null;
+            lastPause: components["schemas"]["Pause-Output"] | null;
             /** Maxbatch */
             maxBatch: number;
             /** Minutesleft */
@@ -3306,6 +3609,18 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * Harness
+         * @description What this harness itself did for the account.
+         */
+        Harness: {
+            /** Simulationssent */
+            simulationsSent: number;
+            /** Submissions */
+            submissions: number;
+            /** Tasks */
+            tasks: number;
+        };
         /** Health */
         Health: {
             /** Activesimulations */
@@ -3321,6 +3636,11 @@ export interface components {
             version: string;
             /** Websocketclients */
             websocketClients: number;
+        };
+        /** Ids */
+        Ids: {
+            /** Alpha Ids */
+            alpha_ids: string[];
         };
         /** KeyFailed */
         KeyFailed: {
@@ -3363,6 +3683,17 @@ export interface components {
              * @constant
              */
             ok: true;
+        };
+        /** KindDay */
+        KindDay: {
+            /** Cap */
+            cap: number;
+            /** Full */
+            full: boolean;
+            /** Kind */
+            kind: string;
+            /** Submitted */
+            submitted: number;
         };
         /** LLMBudget */
         LLMBudget: {
@@ -3683,6 +4014,17 @@ export interface components {
             /** Universe */
             universe: string;
         };
+        /** Message */
+        Message: {
+            /** Date */
+            date: string | null;
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Type */
+            type: string | null;
+        };
         /** ModelBudget */
         ModelBudget: {
             /** Bulk */
@@ -3736,6 +4078,37 @@ export interface components {
             /** Vector */
             vector: string[];
         };
+        /** OsmosisView */
+        OsmosisView: {
+            /** Auto */
+            auto: boolean;
+            /** Changes */
+            changes: number;
+            /** Currenteligible */
+            currentEligible: boolean;
+            /** Currentproblems */
+            currentProblems: string[];
+            /** Includesuper */
+            includeSuper: boolean;
+            /** Lastapplied */
+            lastApplied: string | null;
+            /** Lastresult */
+            lastResult: string | null;
+            /** Perscope */
+            perScope: number;
+            /** Plannedeligible */
+            plannedEligible: boolean;
+            /** Problems */
+            problems: string[];
+            /** Rules */
+            rules: {
+                [key: string]: number;
+            };
+            /** Scopes */
+            scopes: components["schemas"]["ScopeView"][];
+            /** Weighting */
+            weighting: string;
+        };
         /** Pair */
         Pair: {
             /** Maxposition */
@@ -3757,7 +4130,12 @@ export interface components {
             maxTrade: "ON" | "OFF";
         };
         /** Pause */
-        Pause: {
+        "Pause-Input": {
+            /** Paused */
+            paused: boolean;
+        };
+        /** Pause */
+        "Pause-Output": {
             /**
              * End
              * Format: date-time
@@ -3768,6 +4146,15 @@ export interface components {
              * Format: date-time
              */
             start: string;
+        };
+        /** Payment */
+        Payment: {
+            /** Amount */
+            amount: number;
+            /** Date */
+            date: string;
+            /** Kind */
+            kind: string;
         };
         /** Period */
         Period: {
@@ -4064,6 +4451,45 @@ export interface components {
             /** Truncation */
             truncation?: number | null;
         };
+        /** ProfileView */
+        ProfileView: {
+            /** Alphas */
+            alphas: {
+                [key: string]: number;
+            };
+            basePayment: components["schemas"]["Activity"] | null;
+            /** Competitions */
+            competitions: components["schemas"]["Competition"][];
+            /** Consultant */
+            consultant: {
+                [key: string]: unknown;
+            };
+            /** Currency */
+            currency: string;
+            /** Diversity */
+            diversity: components["schemas"]["DiversityRow"][];
+            /** Features */
+            features: string[];
+            harness: components["schemas"]["Harness"];
+            /** Messages */
+            messages: components["schemas"]["Message"][];
+            /** Otherpayments */
+            otherPayments: components["schemas"]["Payment"][];
+            /** Problems */
+            problems: string[];
+            /** Pyramids */
+            pyramids: components["schemas"]["Pyramid"][];
+            /** Referrals */
+            referrals: components["schemas"]["Referral"][];
+            /** Sessionexpiresinseconds */
+            sessionExpiresInSeconds: number | null;
+            simulations: components["schemas"]["Activity"] | null;
+            submissions: components["schemas"]["Activity"] | null;
+            /** User */
+            user: {
+                [key: string]: unknown;
+            };
+        };
         /** PromptInfo */
         PromptInfo: {
             /** Body */
@@ -4092,6 +4518,17 @@ export interface components {
         PromptList: {
             /** Prompts */
             prompts: components["schemas"]["PromptInfo"][];
+        };
+        /** Pyramid */
+        Pyramid: {
+            /** Category */
+            category: string;
+            /** Delay */
+            delay: number;
+            /** Multiplier */
+            multiplier: number;
+            /** Region */
+            region: string;
         };
         /** PyramidCategory */
         PyramidCategory: {
@@ -4166,6 +4603,47 @@ export interface components {
             submitted: number;
             /** Submittedtoday */
             submittedToday: number;
+        };
+        /** QueueEntry */
+        QueueEntry: {
+            /**
+             * Addedat
+             * Format: date-time
+             */
+            addedAt: string;
+            /** Alphaid */
+            alphaId: string;
+            /** Attemptedat */
+            attemptedAt: string | null;
+            /** Fitness */
+            fitness: number | null;
+            /** Kind */
+            kind: string;
+            /** Message */
+            message: string | null;
+            /** Mode */
+            mode: string | null;
+            /** Position */
+            position: number;
+            /** Sharpe */
+            sharpe: number | null;
+            /** Status */
+            status: string;
+            /** Submittedat */
+            submittedAt: string | null;
+        };
+        /** QueueView */
+        QueueView: {
+            /** Days */
+            days: components["schemas"]["KindDay"][];
+            /** Entries */
+            entries: components["schemas"]["QueueEntry"][];
+            /** Lasttick */
+            lastTick: string | null;
+            /** Paused */
+            paused: boolean;
+            /** Resetsinseconds */
+            resetsInSeconds: number;
         };
         /**
          * QuickRequest
@@ -4280,6 +4758,19 @@ export interface components {
              * @enum {string}
              */
             value: "quick" | "normal" | "careful" | "deep";
+        };
+        /** Referral */
+        Referral: {
+            /** Active */
+            active: boolean;
+            /** Country */
+            country: string | null;
+            /** Eligiblealphas */
+            eligibleAlphas: string | null;
+            /** Id */
+            id: string;
+            /** Signin */
+            signIn: string | null;
         };
         /** RegionPlan */
         RegionPlan: {
@@ -4461,6 +4952,21 @@ export interface components {
             /** Universe */
             universe: string;
         };
+        /** ScopeView */
+        ScopeView: {
+            /** Allocated */
+            allocated: boolean;
+            /** Alphas */
+            alphas: components["schemas"]["AlphaPoints"][];
+            /** Currentalphas */
+            currentAlphas: number;
+            /** Currenttotal */
+            currentTotal: number;
+            /** Eligible */
+            eligible: number;
+            /** Scope */
+            scope: string;
+        };
         /** SearchRequest */
         SearchRequest: {
             /**
@@ -4552,6 +5058,20 @@ export interface components {
             userId: string | null;
             /** Verificationurl */
             verificationUrl: string | null;
+        };
+        /** SettingsBody */
+        SettingsBody: {
+            /** Auto */
+            auto: boolean;
+            /** Include Super */
+            include_super: boolean;
+            /** Per Scope */
+            per_scope: number;
+            /**
+             * Weighting
+             * @enum {string}
+             */
+            weighting: "fitness" | "sharpe" | "equal";
         };
         /** SettingsField */
         SettingsField: {
@@ -4717,6 +5237,15 @@ export interface components {
             /** Name */
             name: string | null;
         };
+        /** SubmitOutcome */
+        SubmitOutcome: {
+            /** Alphaid */
+            alphaId: string;
+            /** Message */
+            message: string;
+            /** Submitted */
+            submitted: boolean;
+        };
         /** SubmitRequest */
         SubmitRequest: {
             /** Alpha Id */
@@ -4837,6 +5366,8 @@ export interface components {
             fitness: number | null;
             /** Message */
             message: string | null;
+            /** Queue */
+            queue: string | null;
             /** Selection */
             selection: string | null;
             /** Sharpe */
@@ -5449,6 +5980,15 @@ export interface components {
              * @description The inquiry id from the 409 that asked for a check
              */
             inquiry: string;
+        };
+        /** Window */
+        Window: {
+            /** End */
+            end: string | null;
+            /** Start */
+            start: string | null;
+            /** Value */
+            value: number | null;
         };
         /** Windows */
         Windows: {
@@ -7250,6 +7790,90 @@ export interface operations {
             };
         };
     };
+    view_api_osmosis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OsmosisView"];
+                };
+            };
+        };
+    };
+    apply_api_osmosis_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Approve"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Applied"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_settings_api_osmosis_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     compute_api_portfolio_compute_post: {
         parameters: {
             query?: never;
@@ -7396,6 +8020,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AddedTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    profile_api_profile_get: {
+        parameters: {
+            query?: {
+                refresh?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileView"];
                 };
             };
             /** @description Validation Error */
@@ -7670,6 +8325,216 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CancelResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    view_api_submit_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueView"];
+                };
+            };
+        };
+    };
+    add_api_submit_queue_add_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Ids"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Added"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_caps_api_submit_queue_caps_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Caps"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_api_submit_queue_pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Pause-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_api_submit_queue_reorder_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Ids"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_api_submit_queue__alpha_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alpha_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_now_api_submit_queue__alpha_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alpha_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Approve"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmitOutcome"];
                 };
             };
             /** @description Validation Error */

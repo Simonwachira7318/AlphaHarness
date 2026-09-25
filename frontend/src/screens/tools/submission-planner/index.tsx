@@ -7,12 +7,15 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
+import { SendIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { errorMessage } from '@/api/http'
 import { PnlChart } from '@/screens/pool/pnl-chart'
 import { labTasks } from '@/screens/tasks/api'
+import { submitQueue } from '@/screens/tools/submit-queue/api'
 import {
+  Button,
   Checkbox,
   Empty,
   ErrorNotice,
@@ -85,6 +88,18 @@ export function SubmissionPlannerScreen() {
   })
 
   const data = plan.data
+  const unsubmitted = (data?.order ?? []).filter((r) => !r.submitted)
+  const queuePlan = useMutation({
+    mutationFn: (ids: string[]) => submitQueue.add(ids),
+    onSuccess: (out) => {
+      const added = out.filter((a) => a.added).length
+      toast.success(`Queued ${added} of ${out.length} in planned order`, {
+        description: 'The Submit Queue sends up to 3 regular Alphas a day on its own.',
+      })
+      void client.invalidateQueries({ queryKey: ['submit-queue'] })
+    },
+    onError: (e) => toast.error('Could not queue the plan', { description: errorMessage(e) }),
+  })
   // The strongest *member*, which is not always the strongest candidate: `bestSingle` is taken
   // over everything considered, including Alphas the search left out.
   const best = data?.order[0]
@@ -132,6 +147,17 @@ export function SubmissionPlannerScreen() {
       <PageHeader
         title="Submission Planner"
         description="Which of your submittable Alphas to submit, and in what order."
+        actions={
+          <Button
+            variant="primary"
+            disabled={!unsubmitted.length}
+            loading={queuePlan.isPending}
+            onClick={() => queuePlan.mutate(unsubmitted.map((r) => r.alphaId))}
+          >
+            <SendIcon />
+            Queue Plan · {unsubmitted.length}
+          </Button>
+        }
       />
 
       <Panel

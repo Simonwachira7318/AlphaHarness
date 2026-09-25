@@ -9,7 +9,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export const TILES = ['submitted', 'today', 'left', 'sent', 'pyramids'] as const
-export const PANELS = ['results', 'work'] as const
+export const PANELS = ['work', 'results'] as const
 export type TileId = (typeof TILES)[number]
 export type PanelId = (typeof PANELS)[number]
 export type SectionId = TileId | PanelId
@@ -58,7 +58,22 @@ export const useLayout = create<Layout>()(
         }),
       reset: () => set({ order: DEFAULT, hidden: [] }),
     }),
-    { name: 'alpha-harness-dashboard', version: 1 },
+    {
+      name: 'alpha-harness-dashboard',
+      version: 2,
+      // Version 2 puts Work in Flight above Today's Results. A saved order from before had them
+      // the other way round by default, so it is moved once; the rest of it is kept.
+      migrate: (saved, version) => {
+        const state = saved as Pick<Layout, 'order' | 'hidden'>
+        if (version < 2 && Array.isArray(state.order)) {
+          const order: SectionId[] = state.order.filter((id) => id !== 'work')
+          const at = order.indexOf('results')
+          order.splice(at < 0 ? order.length : at, 0, 'work')
+          return { ...state, order }
+        }
+        return state
+      },
+    },
   ),
 )
 

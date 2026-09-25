@@ -8,10 +8,16 @@ import { useState } from 'react'
 import { cn } from '@/lib/cn'
 
 const SIZE = {
+  /** The sidebar's Profile entry, sized to the other nav icons' row. */
+  xs: 'size-5 rounded-full text-[9px]',
+  /** The top bar's profile button. */
+  round: 'size-7 rounded-full text-caption',
   /** The sidebar's account button. */
   sm: 'size-7 rounded-xs text-caption',
   /** The Dashboard greeting, spanning its two `text-display` lines. */
   lg: 'size-14 rounded-lg text-title sm:size-18 sm:text-headline',
+  /** The Profile page's hero. */
+  xl: 'size-24 rounded-2xl text-headline sm:size-28 sm:text-display',
 } as const
 
 export function initialsOf(name: string): string {

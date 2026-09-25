@@ -32,6 +32,7 @@ from .labs.study import Optimizer
 from .llm.chat import ChatService
 from .llm.registry import ModelRegistry
 from .llm.service import LLMService
+from .osmosis import Osmosis
 from .realtime import (
     TOPIC_SESSION,
     TOPIC_SIMULATIONS,
@@ -41,6 +42,7 @@ from .realtime import (
     Hub,
 )
 from .sealing import Sealer
+from .submitting import SubmitQueue
 from .tasks import TaskRegistry, cancel_background
 from .vault.backfill import Backfill
 from .vault.store import AlphaVault
@@ -127,6 +129,8 @@ class AppState:
             backfill=self.backfill,
         )
         self.optimizer.llm = self.llm
+        self.submit_queue = SubmitQueue(self)
+        self.osmosis = Osmosis(self)
 
         self._renew_lock = asyncio.Lock()
         self._last_session_check = float("-inf")
@@ -184,6 +188,8 @@ class AppState:
         await self.tracker.start()
         await self.engine.start()
         await self.optimizer.start()
+        await self.submit_queue.start()
+        await self.osmosis.start()
         self._session_watch = asyncio.create_task(self._watch_session(), name="session-watch")
         log.info("startup.complete", data_dir=str(self.settings.data_dir))
 
@@ -282,6 +288,8 @@ class AppState:
             watch.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await watch
+        await self.osmosis.stop()
+        await self.submit_queue.stop()
         await self.optimizer.stop()
         await self.engine.stop()
         await self.tracker.stop()

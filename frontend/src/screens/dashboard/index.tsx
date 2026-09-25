@@ -13,7 +13,7 @@ import {
   SendIcon,
   SlidersHorizontalIcon,
 } from 'lucide-react'
-import { Fragment, type ReactNode, useEffect, useState } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useState } from 'react'
 import { today } from '@/api/core'
 import type { components } from '@/api/generated'
 import { http } from '@/api/http'
@@ -182,14 +182,38 @@ export function DashboardScreen() {
 
       {shownTiles.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {shownTiles.map((id) => (
-            <Fragment key={id}>{tiles[id]}</Fragment>
+          {shownTiles.map((id, i) => (
+            // DESIGN.md → Motion, `rise`: the tiles arrive one after another on mount.
+            <div
+              key={id}
+              className="animate-rise"
+              // The rise staggers in; the border beam starts each tile at its own point of the lap.
+              style={
+                {
+                  animationDelay: `${200 + i * 70}ms`,
+                  '--beam-delay': `${-i * 1.1}s`,
+                } as CSSProperties
+              }
+            >
+              {tiles[id]}
+            </div>
           ))}
         </div>
       )}
 
-      {shownPanels.map((id) => (
-        <Fragment key={id}>{id === 'results' ? <TodayResultsPanel /> : <WorkInFlight />}</Fragment>
+      {shownPanels.map((id, i) => (
+        <div
+          key={id}
+          className="animate-rise"
+          style={
+            {
+              animationDelay: `${200 + (shownTiles.length + i) * 70}ms`,
+              '--beam-delay': `${-(shownTiles.length + i) * 1.1}s`,
+            } as CSSProperties
+          }
+        >
+          {id === 'results' ? <TodayResultsPanel /> : <WorkInFlight />}
+        </div>
       ))}
 
       <Customize open={customizing} onOpenChange={setCustomizing} />
@@ -279,11 +303,27 @@ function StatTile({
   extra?: ReactNode
 }) {
   return (
-    <Panel bodyClassName="flex h-full flex-col justify-between gap-3">
+    <Panel
+      className="live-tile group isolate h-full overflow-hidden transition-[transform,border-color,background-color] duration-200 ease-out hover:-translate-y-1 hover:border-primary hover:bg-surface-2"
+      bodyClassName="flex h-full flex-col justify-between gap-3"
+    >
+      {/* Live: a corner glow that breathes all the time, and a grid that wakes on hover. */}
+      <div
+        aria-hidden
+        className="lab-glow pointer-events-none absolute inset-0 -z-10 animate-breathe group-hover:animate-none group-hover:opacity-100"
+      />
+      <div
+        aria-hidden
+        className="lab-grid pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-50"
+      />
       <div className="flex min-h-5 items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {icon && <span className="text-ink-subtle [&_svg]:size-3.5">{icon}</span>}
-          <span className="text-caption font-medium uppercase tracking-wide text-ink-subtle">
+          {icon && (
+            <span className="text-ink-subtle transition-colors duration-200 group-hover:text-primary [&_svg]:size-3.5 [&_svg]:origin-center motion-safe:group-hover:[&_svg]:animate-shake">
+              {icon}
+            </span>
+          )}
+          <span className="text-caption font-medium uppercase tracking-wide text-ink-subtle transition-colors group-hover:text-ink-muted">
             {label}
           </span>
         </div>

@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any
 
 import structlog
 from sqlalchemy import func, select
+from sqlalchemy.exc import OperationalError
 
 from ..db.models import (
     SimStatus,
@@ -172,8 +173,20 @@ class Optimizer:
             try:
                 results[study_id] = await self.advance(study_id)
             except Exception as exc:
+                if self._stopping.is_set() or isinstance(exc, OperationalError):
+                    # The database closing under a round (a restart, a reload) says nothing
+                    # about the task. Failing it for that stranded its simulations: a failed
+                    # task can't be stopped, and one with simulations out can't be removed.
+                    log.warning("optimize.study_interrupted", study_id=study_id, error=str(exc))
+                    continue
                 log.exception("optimize.study_failed", study_id=study_id)
                 await scheduler.finish(self, study_id, StudyStatus.FAILED, str(exc))
+                continue
+            # Outside the round's lock: a forced stop takes the same lock.
+            try:
+                await scheduler.force_if_stuck(self, study_id)
+            except Exception:
+                log.exception("optimize.stuck_check_failed", study_id=study_id)
         return results
 
     def lock(self, study_id: int) -> asyncio.Lock:

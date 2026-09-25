@@ -71,11 +71,11 @@ class AuthService:
         """Last known session state. Cheap; does not hit the network."""
         return self._session
 
-    async def get_user_profile(self) -> dict[str, Any]:
-        """Cached user profile from BRAIN /users/{userId}."""
+    async def get_user_profile(self, *, refresh: bool = False) -> dict[str, Any]:
+        """Cached user profile from BRAIN /users/{userId}; ``refresh`` reads it again."""
         if not self._session.authenticated or not self._session.user_id:
             return {}
-        if self._user_profile is not None:
+        if self._user_profile is not None and not refresh:
             return self._user_profile
         try:
             profile = await self.endpoints.get_user(self._session.user_id)

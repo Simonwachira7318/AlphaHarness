@@ -15,9 +15,8 @@ from sqlalchemy import select
 
 from ..brain.errors import BrainError
 from ..brain.schemas import SimulationSettings
-from ..brain.submit import submit_alpha
 from ..catalog.queries import Tuple4
-from ..db.models import Study, Submission, Trial, utcnow
+from ..db.models import Study, Submission, SubmitQueueEntry, Trial, utcnow
 from ..labs import super_alpha
 from ..labs.launch import (
     OPERATORS_UNREAD,
@@ -118,6 +117,8 @@ class SuperResult(Out):
     failed: list[str]
     verdict: str | None
     submitted: bool
+    #: Where it stands in the Submit Queue, if it is there.
+    queue: str | None
 
 
 class CheckRequest(BaseModel):
@@ -326,6 +327,20 @@ async def results(state: State, task_id: int | None = None) -> list[SuperResult]
             if ids
             else set()
         )
+        queued: dict[str, str] = (
+            {
+                str(a): str(st)
+                for a, st in (
+                    await session.execute(
+                        select(SubmitQueueEntry.alpha_id, SubmitQueueEntry.status).where(
+                            SubmitQueueEntry.alpha_id.in_(ids)
+                        )
+                    )
+                ).tuples()
+            }
+            if ids
+            else {}
+        )
     stored = await state.alphas.by_ids(ids)
 
     out: list[SuperResult] = []
@@ -348,6 +363,7 @@ async def results(state: State, task_id: int | None = None) -> list[SuperResult]
                 failed=[str(c.get("name")) for c in checks if c.get("result") == "FAIL"],
                 verdict=verdict(checks) if checks else None,
                 submitted=(trial.alpha_id in submitted) or bool(alpha.get("date_submitted")),
+                queue=queued.get(trial.alpha_id or ""),
             )
         )
     return out
@@ -406,32 +422,12 @@ async def submit(body: SubmitRequest, state: State) -> Submitted:
     if trial is None:
         raise refuse(404, "not_a_super_lab_alpha", f"{alpha_id} was not made by the Super Lab.")
 
-    # BRAIN asks a SuperAlpha to describe its selection and combo before it will take it.
-    settings = trial.settings or {}
-    try:
-        await state.endpoints.update_alpha(
-            alpha_id,
-            super_alpha.descriptions(
-                trial.expression or "",
-                str((trial.params or {}).get("combo") or ""),
-                limit=int(settings.get("selectionLimit") or 10),
-                handling=str(settings.get("selectionHandling") or "POSITIVE"),
-            ),
-        )
-    except BrainError as exc:
-        raise refuse(
-            502, "describe_failed", f"The descriptions could not be set: {exc.message}"
-        ) from exc
-
-    outcome = await submit_alpha(state.endpoints.client, alpha_id)
-    if outcome.submitted:
-        async with state.db.session() as session:
-            await session.merge(Submission(alpha_id=alpha_id, submitted_at=utcnow()))
-            await session.commit()
+    # The queue checks it, fills its descriptions, submits it and counts it against the day.
+    out = await state.submit_queue.submit_now(alpha_id)
     return Submitted(
         alpha_id=alpha_id,
-        submitted=outcome.submitted,
-        status=outcome.status,
-        message=outcome.message,
-        failed=outcome.failed,
+        submitted=out["submitted"],
+        status=200 if out["submitted"] else 409,
+        message=out["message"],
+        failed=list(out.get("failed") or []),
     )

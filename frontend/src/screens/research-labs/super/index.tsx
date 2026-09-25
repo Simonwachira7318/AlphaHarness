@@ -18,6 +18,7 @@ import { cn } from '@/lib/cn'
 import { DASH, fmt } from '@/lib/format'
 import { CORES } from '@/screens/research-labs/lab-task'
 import { Setting } from '@/screens/research-labs/task-settings'
+import { submitQueue } from '@/screens/tools/submit-queue/api'
 import {
   Badge,
   Button,
@@ -626,6 +627,18 @@ function ResultsPanel() {
     },
   })
 
+  const queue = useMutation({
+    mutationFn: (ids: string[]) => submitQueue.add(ids),
+    onSuccess: (out) => {
+      for (const a of out)
+        if (a.added) toast.success(`${a.alphaId} queued`, { description: a.message })
+        else toast.error(`${a.alphaId} was not queued`, { description: a.message })
+      void queryClient.invalidateQueries({ queryKey: ['super-lab', 'results'] })
+      void queryClient.invalidateQueries({ queryKey: ['submit-queue'] })
+    },
+    onError: (e) => toast.error('Could not queue', { description: errorMessage(e) }),
+  })
+
   // The notebook checks only the Alphas whose in-sample tests all passed.
   const clean = simulated.filter((r) => r.failed.length === 0 && !r.submitted)
 
@@ -694,6 +707,10 @@ function ResultsPanel() {
                   <td className="px-2 py-1.5">
                     {r.submitted ? (
                       <Badge tone="profit">Submitted</Badge>
+                    ) : r.queue ? (
+                      <Badge tone={r.queue === 'REFUSED' ? 'loss' : 'neutral'}>
+                        {r.queue === 'REFUSED' ? 'set aside' : 'in queue'}
+                      </Badge>
                     ) : r.failed.length > 0 ? (
                       <Badge tone="loss" title={r.failed.join(', ')}>
                         {fmt.int(r.failed.length)} failed
@@ -714,6 +731,15 @@ function ResultsPanel() {
                           onClick={() => check.mutate([r.alphaId as string])}
                         >
                           Check
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={r.queue === 'QUEUED' || r.queue === 'SUBMITTING'}
+                          loading={queue.isPending && queue.variables?.includes(r.alphaId)}
+                          onClick={() => queue.mutate([r.alphaId as string])}
+                        >
+                          Queue
                         </Button>
                         <Button
                           size="sm"
@@ -741,9 +767,9 @@ function ResultsPanel() {
         pending={submit.isPending}
         onConfirm={() => confirming?.alphaId && submit.mutate(confirming.alphaId)}
       >
-        This submits the SuperAlpha on BRAIN and cannot be undone. Its selection and combo
-        descriptions are filled in first, then BRAIN re-runs its checks, which can take a few
-        minutes.
+        This submits the SuperAlpha on BRAIN now and cannot be undone. It is checked first, its
+        selection and combo descriptions are filled in, and it counts toward today's one automatic
+        SuperAlpha. To have it go on its turn instead, use Queue.
       </Confirm>
     </Panel>
   )

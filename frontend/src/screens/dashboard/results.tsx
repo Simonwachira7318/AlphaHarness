@@ -11,6 +11,7 @@ import { fmt } from '@/lib/format'
 import { useRefetchOn } from '@/lib/ws'
 import { Empty, ErrorNotice, LINK, Metric, Panel, Skeleton, signTone, TEXT_TONE } from '@/ui/kit'
 import { CountUp } from './count-up'
+import { ResultsHeatmap, RunningFlask } from './heatmap'
 
 const SEGMENTS = [
   { key: 'completed', label: 'Completed', bar: 'bg-pnl-positive' },
@@ -30,6 +31,7 @@ export function TodayResultsPanel() {
     <Panel
       title="Today's Results"
       description="How the simulations sent today ended"
+      className="live-tile"
       bodyClassName="flex flex-col gap-4"
     >
       {results.isPending ? (
@@ -44,7 +46,15 @@ export function TodayResultsPanel() {
             <Metric label="Completed" tone="profit" value={<CountUp value={r.completed} />} />
             <Metric label="Errored" tone="loss" value={<CountUp value={r.errored} />} />
             <Metric label="Cancelled" tone="warn" value={<CountUp value={r.cancelled} />} />
-            <Metric label="Running" value={<CountUp value={r.running} />} />
+            <Metric
+              label={
+                <span className="flex items-center gap-1.5">
+                  {r.running > 0 && <RunningFlask />}
+                  Running
+                </span>
+              }
+              value={<CountUp value={r.running} />}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -101,6 +111,8 @@ export function TodayResultsPanel() {
               )}
             </div>
           )}
+
+          <ResultsHeatmap counts={r} />
         </>
       )}
     </Panel>

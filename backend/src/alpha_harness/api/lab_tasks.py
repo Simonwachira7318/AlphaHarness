@@ -359,8 +359,13 @@ async def remove(task_id: int, state: State) -> TaskRemoved:
                     SimulationRecord.status.in_([SimStatus.PENDING, SimStatus.RUNNING]),
                 )
             )
-        if row.status in (StudyStatus.RUNNING, StudyStatus.QUEUED) or out:
+        if row.status in (StudyStatus.RUNNING, StudyStatus.QUEUED):
             raise refuse(409, "running", "Pause or stop the task first: simulations are still out.")
+        if out:
+            # A finished task still waiting on BRAIN (it failed mid-round, or BRAIN holds a
+            # simulation that never moves): nothing would score what is out, so it is
+            # cancelled. One BRAIN refuses to cancel has finished; its Alpha still lands.
+            await state.engine.abandon(row.task)
         await state.engine.drop_queued(row.task)
         await state.optimizer.delete(task_id)
         await state.engine.set_quota(row.task, 0, enabled=False)

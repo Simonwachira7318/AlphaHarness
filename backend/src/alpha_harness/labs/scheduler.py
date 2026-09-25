@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import UTC, timedelta
 from typing import TYPE_CHECKING, Any
 
 import structlog
@@ -431,6 +432,59 @@ async def stop_task(optimizer: Optimizer, row: Study, *, force: bool = False) ->
                 await session.commit()
     await start_waiting(optimizer)
     await optimizer.notify()
+
+
+#: A stopping task whose simulations have all gone this long without BRAIN reporting any new
+#: progress is forced to stop. Measured: BRAIN can hold a simulation at 10% for hours,
+#: answering every poll with ``Retry-After``, and an ordinary stop waits on it forever.
+STUCK_AFTER = timedelta(minutes=30)
+
+
+async def force_if_stuck(optimizer: Optimizer, study_id: int) -> bool:
+    """Force a stopping task to finish when everything it waits on has stopped moving.
+
+    Only a task the consultant already stopped: that is the intent, and the second press
+    would do exactly this. A running task's slow simulation is left alone, since BRAIN's
+    large markets legitimately take a long time.
+    """
+    async with optimizer.db.session() as session:
+        row = await session.get(Study, study_id)
+        if row is None or row.status != StudyStatus.RUNNING or not task_params(row).stopping:
+            return False
+        moved = (
+            await session.execute(
+                select(
+                    func.count(),
+                    func.max(
+                        func.coalesce(
+                            SimulationRecord.last_polled_at,
+                            SimulationRecord.submitted_at,
+                            SimulationRecord.created_at,
+                        )
+                    ),
+                ).where(
+                    SimulationRecord.task == row.task,
+                    SimulationRecord.status.in_(
+                        [SimStatus.QUEUED, SimStatus.PENDING, SimStatus.RUNNING]
+                    ),
+                )
+            )
+        ).one()
+    waiting, last_moved = int(moved[0] or 0), moved[1]
+    if not waiting or last_moved is None:
+        return False
+    if last_moved.tzinfo is None:
+        last_moved = last_moved.replace(tzinfo=UTC)
+    if utcnow() - last_moved < STUCK_AFTER:
+        return False
+    log.warning(
+        "tasks.stopping_stuck",
+        study_id=study_id,
+        waiting=waiting,
+        since=last_moved.isoformat(),
+    )
+    await stop_task(optimizer, row, force=True)
+    return True
 
 
 async def resize_task(

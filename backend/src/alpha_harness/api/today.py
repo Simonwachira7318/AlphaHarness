@@ -346,9 +346,7 @@ def _headline(remaining: int, limit: int, queued: int = 0) -> str:
     share = unspoken / limit
     tail = f" {queued:,} more are already queued." if queued else ""
     if share > 0.9:
-        return (
-            f"{unspoken:,} simulations are unused today. They cannot be saved for tomorrow.{tail}"
-        )
+        return f"{unspoken:,} simulations are unused today.{tail}"
     if share > 0.5:
         return f"{unspoken:,} simulations left today.{tail}"
     return f"{unspoken:,} left of {limit:,}. Good day so far.{tail}"

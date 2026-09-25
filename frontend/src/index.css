@@ -344,6 +344,30 @@
     }
   }
 
+  /* Hovered cards: the icon rocks, a flask swirling or a wrench turning. */
+  --animate-shake: shake 700ms ease-in-out infinite;
+  @keyframes shake {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    15% {
+      transform: rotate(-14deg);
+    }
+    30% {
+      transform: rotate(11deg);
+    }
+    45% {
+      transform: rotate(-8deg);
+    }
+    60% {
+      transform: rotate(5deg);
+    }
+    75% {
+      transform: rotate(-2deg);
+    }
+  }
+
   /* Sync matrix: an ink shimmer sweeping across a market while its fields download. */
   --animate-sweep: sweep 1.4s linear infinite;
   @keyframes sweep {
@@ -422,6 +446,100 @@
 /* DESIGN.md subtle top edge highlight for elevated panels: a faint "pixel rendered" feel. */
 @utility panel-highlight {
   box-shadow: inset 0 1px 0 0 var(--color-hairline-strong);
+}
+
+/* Link cards (Research Labs, Tools): a fine lab-notebook grid that fades out from the top-right corner. */
+@utility lab-grid {
+  background-image:
+    linear-gradient(
+      color-mix(in oklab, var(--color-hairline-strong) 70%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-hairline-strong) 70%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 18px 18px;
+  mask-image: radial-gradient(120% 100% at 100% 0%, #000 0%, transparent 70%);
+}
+
+/* …and a primary-tinted glow in the same corner, raised on hover by the card. */
+@utility lab-glow {
+  background-image: radial-gradient(
+    90% 80% at 100% 0%,
+    color-mix(in oklab, var(--color-primary) 22%, transparent) 0%,
+    transparent 65%
+  );
+}
+
+/* Dashboard tiles: a beam of primary light forever circling the border, and a corner glow that
+   breathes. `--beam-delay` (negative) puts each tile at its own point of the lap. */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@utility live-tile {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0deg,
+      transparent 230deg,
+      color-mix(in oklab, var(--color-primary) 35%, transparent) 290deg,
+      var(--color-primary) 345deg,
+      transparent 360deg
+    );
+    /* Only the 1px ring shows: the content box is cut out of the gradient. */
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    opacity: 0.55;
+    transition: opacity 300ms ease-out;
+    animation: beam-spin 5s linear infinite;
+    animation-delay: var(--beam-delay, 0s);
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+    }
+  }
+}
+
+@utility animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+  animation-delay: var(--beam-delay, 0s);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 @layer base {

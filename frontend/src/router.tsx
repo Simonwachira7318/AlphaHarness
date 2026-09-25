@@ -133,6 +133,18 @@ const correlationBreaker = createRoute({
   ),
 })
 
+const submitQueue = createRoute({
+  getParentRoute: () => tools,
+  path: 'submit-queue',
+  component: lazyRouteComponent(() => import('@/screens/tools/submit-queue'), 'SubmitQueueScreen'),
+})
+
+const osmosisTool = createRoute({
+  getParentRoute: () => tools,
+  path: 'osmosis',
+  component: lazyRouteComponent(() => import('@/screens/tools/osmosis'), 'OsmosisScreen'),
+})
+
 const tasks = createRoute({ getParentRoute: () => root, path: '/tasks' })
 const tasksIndex = createRoute({
   getParentRoute: () => tasks,
@@ -190,6 +202,12 @@ const aiIndex = createRoute({
 const aiTab = createRoute({ getParentRoute: () => ai, path: '$tab' })
 const aiThread = createRoute({ getParentRoute: () => ai, path: 'assistant/$threadId' })
 
+const profile = createRoute({
+  getParentRoute: () => root,
+  path: '/profile',
+  component: lazyRouteComponent(() => import('@/screens/profile'), 'ProfileScreen'),
+})
+
 const pyramids = createRoute({
   getParentRoute: () => root,
   path: '/pyramids',
@@ -202,13 +220,21 @@ const routeTree = root.addChildren([
   matrix,
   data.addChildren([dataIndex, dataTab]),
   labs.addChildren([labsIndex, searchLab, templateLab, evolutionLab, powerPoolLab, superLab]),
-  tools.addChildren([toolsIndex, settingsSampler, submissionPlanner, correlationBreaker]),
+  tools.addChildren([
+    toolsIndex,
+    settingsSampler,
+    submissionPlanner,
+    correlationBreaker,
+    submitQueue,
+    osmosisTool,
+  ]),
   tasks.addChildren([tasksIndex, taskResults]),
   pool.addChildren([poolIndex, poolTab]),
   portfolio,
   alpha,
   ai.addChildren([aiIndex, aiTab, aiThread]),
   pyramids,
+  profile,
 ])
 
 /** A screen that throws says so instead of going blank (CLAUDE.md anti-goal 3), and offers

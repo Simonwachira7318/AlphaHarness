@@ -4,8 +4,8 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useRouterState } from '@tanstack/react-router'
-import { ExternalLinkIcon, KeyRoundIcon, LogOutIcon } from 'lucide-react'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { ExternalLinkIcon, KeyRoundIcon, LogOutIcon, UserRoundIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { create } from 'zustand'
@@ -20,6 +20,10 @@ import { Avatar } from './avatar'
 import { GeniusBadge } from './genius'
 import { NAV } from './nav'
 import { UpdateBadge, VersionBadge } from './update'
+
+/** A nav row. The border is always there, transparent, so the active outline moves nothing. */
+const NAV_ITEM =
+  'group flex h-8 items-center gap-3 rounded-md border border-transparent text-body text-ink-subtle transition-colors hover:bg-surface-1 hover:text-ink data-[status=active]:border-primary data-[status=active]:bg-surface-2 data-[status=active]:text-ink'
 
 /** Areas a new consultant has to open once: Data (download fields) and AI (add a key). They flash until visited. */
 const ONBOARDING: readonly string[] = ['data', 'ai']
@@ -40,6 +44,7 @@ const useVisited = create<{
 
 export function Sidebar({ you, collapsed }: { you: Today['you']; collapsed: boolean }) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const area = useRouterState({
     select: (s) => s.location.pathname.split('/')[1] ?? '',
   })
@@ -115,7 +120,7 @@ export function Sidebar({ you, collapsed }: { you: Today['you']; collapsed: bool
             title={item.label}
             {...(collapsed && { 'aria-label': item.label })}
             className={cn(
-              'group flex h-8 items-center gap-3 rounded-md text-body text-ink-subtle transition-colors hover:bg-surface-1 hover:text-ink data-[status=active]:bg-surface-2 data-[status=active]:text-ink',
+              NAV_ITEM,
               collapsed ? 'justify-center' : 'px-2',
               ONBOARDING.includes(item.area) &&
                 !visited.includes(item.area) &&
@@ -137,6 +142,19 @@ export function Sidebar({ you, collapsed }: { you: Today['you']; collapsed: bool
             )}
           </Link>
         ))}
+        {/* The account itself, with its own face for an icon. */}
+        <div className="my-1 border-t border-hairline" aria-hidden />
+        <Link
+          to="/profile"
+          title="Profile"
+          {...(collapsed && { 'aria-label': 'Profile' })}
+          className={cn(NAV_ITEM, collapsed ? 'justify-center' : 'px-2')}
+        >
+          <span className="rounded-full ring-1 ring-transparent transition-shadow group-hover:ring-primary group-data-[status=active]:ring-primary">
+            <Avatar name={name} userId={you.userId} size="xs" />
+          </span>
+          {!collapsed && <span className="flex-1 truncate">Profile</span>}
+        </Link>
       </nav>
 
       <div className="flex flex-col gap-1 border-t border-hairline p-2">
@@ -175,6 +193,11 @@ export function Sidebar({ you, collapsed }: { you: Today['you']; collapsed: bool
             </button>
           }
           items={[
+            {
+              label: 'Profile',
+              icon: <UserRoundIcon />,
+              onClick: () => void navigate({ to: '/profile' }),
+            },
             {
               label: 'Open the BRAIN Platform',
               icon: <ExternalLinkIcon />,

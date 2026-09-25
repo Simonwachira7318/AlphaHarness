@@ -596,6 +596,39 @@ class KeyUsage(Base):
     __table_args__ = (UniqueConstraint("api_key_id", "model", "day", name="uq_key_model_day"),)
 
 
+class QueueStatus(StrEnum):
+    """Where an Alpha stands in the Submit Queue."""
+
+    QUEUED = "QUEUED"
+    SUBMITTING = "SUBMITTING"
+    SUBMITTED = "SUBMITTED"
+    #: BRAIN or the pre-submission check turned it down; it waits to be queued again.
+    REFUSED = "REFUSED"
+
+
+class SubmitQueueEntry(Base):
+    """An Alpha approved for submission, in the order the consultant chose.
+
+    Also the log of every submission this application made, automatic or approved by hand:
+    the daily caps are counted from it.
+    """
+
+    __tablename__ = "submit_queue"
+
+    alpha_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    #: ``REGULAR`` or ``SUPER``: each has its own daily cap.
+    kind: Mapped[str] = mapped_column(String(16), default="REGULAR")
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(16), default=QueueStatus.QUEUED, index=True)
+    added_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow)
+    attempted_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    submitted_at: Mapped[datetime | None] = mapped_column(UtcDateTime, index=True)
+    #: ``auto`` when the queue submitted it under the daily cap, ``approved`` when submitted by
+    #: an explicit per-Alpha approval.
+    mode: Mapped[str | None] = mapped_column(String(16))
+    message: Mapped[str | None] = mapped_column(Text)
+
+
 class Submission(Base):
     """An Alpha the consultant has told us they submitted on BRAIN.
 

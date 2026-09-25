@@ -16,6 +16,7 @@ import { useRefetchOn } from '@/lib/ws'
 import { Badge, Button, Empty, ErrorNotice, Panel, Progress, Skeleton } from '@/ui/kit'
 import { Confirm } from '@/ui/overlay'
 import { type Column, DataTable } from '@/ui/table'
+import { RunningFlask, SlotHeatmap } from './heatmap'
 
 /** DESIGN.md → Motion, `sweep`: the ink shimmer that says "this is moving right now". */
 const SWEEP =
@@ -80,7 +81,7 @@ export function WorkInFlight() {
       width: '150px',
       cell: (r) => (
         <span className="flex items-center gap-2">
-          {r.running && <span className={cn('h-1.5 w-4 rounded-pill', SWEEP)} aria-hidden />}
+          {r.running && <RunningFlask className="size-4" />}
           <Badge tone={r.running ? 'neutral' : 'outline'}>{r.running ? 'Running' : 'Queued'}</Badge>
         </span>
       ),
@@ -133,6 +134,7 @@ export function WorkInFlight() {
           </Button>
         )
       }
+      className="live-tile"
       bodyClassName="flex flex-col gap-4"
     >
       {status.isPending ? (
@@ -156,6 +158,8 @@ export function WorkInFlight() {
       )}
 
       <TasksSummary />
+
+      {!status.isPending && !status.isError && <SlotHeatmap status={status.data} />}
 
       <Confirm
         open={confirm !== null}
@@ -240,6 +244,7 @@ function TasksSummary() {
       {shown.map((t) => (
         <div key={t.id} className="flex flex-col gap-1 text-body">
           <div className="flex items-center gap-2">
+            {t.state === 'running' && <RunningFlask />}
             <span className="min-w-0 flex-1 truncate text-ink">{t.label}</span>
             <Badge
               tone={t.state === 'failed' ? 'loss' : t.state === 'cancelled' ? 'outline' : 'neutral'}

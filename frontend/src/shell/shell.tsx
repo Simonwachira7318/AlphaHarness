@@ -93,7 +93,7 @@ function Workspace({ you }: { you: Today['you'] }) {
         {wide && <ResizeHandle key="handle" variant="edge" />}
         <Panel key="workspace" id="workspace" minSize={wide ? 480 : 0} className="min-w-0">
           <div className="flex h-full min-h-0 min-w-0 flex-col">
-            <Header />
+            <Header you={you} />
             <VerificationBanner />
             <main className="min-h-0 flex-1 overflow-auto">
               <Suspense fallback={<ScreenSkeleton />}>

@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # A consultant's daily simulation allowance, shown until the day's first simulation
     # POST returns its x-ratelimit-* headers.
     daily_simulation_allowance: int = 5000
+    # The Submit Queue submits on its own at most this many Alphas per BRAIN day (midnight US
+    # Eastern), by kind. Anything past them is submitted only when approved one Alpha at a time.
+    auto_submit_regular_per_day: int = 3
+    auto_submit_super_per_day: int = 1
 
     # --- Local storage --------------------------------------------------
     # Home-relative by default. Must stay on native ext4 — see CLAUDE.md.

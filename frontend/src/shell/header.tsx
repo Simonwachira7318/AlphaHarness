@@ -8,6 +8,7 @@ import { Link } from '@tanstack/react-router'
 import { ClockIcon, SearchIcon, ZapIcon } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { simulations, today } from '@/api/core'
+import type { Today } from '@/api/types'
 import { cn } from '@/lib/cn'
 import { fmt } from '@/lib/format'
 import { useCores, useLive } from '@/lib/live'
@@ -15,11 +16,14 @@ import { coreBlocks } from '@/lib/matrix'
 import { useRefetchOn } from '@/lib/ws'
 import { Button, STATUS } from '@/ui/kit'
 import { Tooltip } from '@/ui/overlay'
+import { Avatar } from './avatar'
 import { useCommandMenu } from './command-menu'
 import { CoreSettings, UsageGraph, useCoreView, useSampleCores } from './core-usage'
+import { GeniusBadge } from './genius'
 
-export function Header() {
+export function Header({ you }: { you: Today['you'] }) {
   const openMenu = useCommandMenu((s) => s.setOpen)
+  const name = you.fullName ?? you.userId ?? 'Signed in'
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-hairline bg-canvas px-4">
@@ -35,6 +39,22 @@ export function Header() {
         >
           <SearchIcon />
         </Button>
+        <Tooltip
+          content={
+            <span className="flex items-center gap-2">
+              {name}
+              <GeniusBadge level={you.geniusLevel} />
+            </span>
+          }
+        >
+          <Link
+            to="/profile"
+            aria-label={`Profile: ${name}`}
+            className="group rounded-full ring-1 ring-hairline-strong ring-offset-2 ring-offset-canvas transition-shadow hover:ring-primary focus-visible:ring-primary data-[status=active]:ring-2 data-[status=active]:ring-primary"
+          >
+            <Avatar name={name} userId={you.userId} size="round" />
+          </Link>
+        </Tooltip>
       </div>
     </header>
   )
